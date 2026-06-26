@@ -2,6 +2,11 @@
   "name": "text2img",
   "version": "1.0.0",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "pm2:start": "set \"PM2_HOME=%cd%\\.pm2\" && pm2 startOrRestart ecosystem.config.cjs --env production",
+    "pm2:list": "set \"PM2_HOME=%cd%\\.pm2\" && pm2 list",
+    "pm2:restart": "set \"PM2_HOME=%cd%\\.pm2\" && pm2 restart text2img --update-env",
+    "pm2:stop": "set \"PM2_HOME=%cd%\\.pm2\" && pm2 stop text2img",
+    "pm2:logs": "set \"PM2_HOME=%cd%\\.pm2\" && pm2 logs text2img"
   }
 }

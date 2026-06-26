@@ -1,1 +1,3 @@
 app/.env
+.pm2/
+app/.pm2/

@@ -17,7 +17,7 @@ body {
   transition: all 0.5s;
 }
 
-body.purple {
+body[data-theme="purple"] {
   --bg1: #140a1f;
   --bg2: #2a0f45;
   --accent: #a855f7;
@@ -67,6 +67,11 @@ body.purple {
   background: rgba(255,255,255,0.2);
 }
 
+body[data-theme="dark"] .theme-btn[data-theme="dark"],
+body[data-theme="purple"] .theme-btn[data-theme="purple"] {
+  background: rgba(255,255,255,0.2);
+}
+
 .fade-in {
   animation: fadeIn 0.5s ease;
 }
@@ -79,6 +84,12 @@ body.purple {
 
 <body class="text-white p-10">
 
+<script>
+(function () {
+  document.body.dataset.theme = localStorage.getItem("theme") || "purple";
+})();
+</script>
+
 <!-- header -->
 <div class="flex justify-between items-center mb-10">
 
@@ -87,8 +98,8 @@ body.purple {
   </div>
 
   <div class="flex gap-3">
-    <div class="theme-btn theme-active" onclick="setTheme('dark',this)">暗黑</div>
-    <div class="theme-btn" onclick="setTheme('purple',this)">紫色科技</div>
+    <div class="theme-btn" data-theme="dark" onclick="setTheme('dark',this)">暗黑</div>
+    <div class="theme-btn" data-theme="purple" onclick="setTheme('purple',this)">紫色科技</div>
   </div>
 
 </div>
@@ -189,7 +200,7 @@ function switchMode(el, mode) {
 }
 
 function setTheme(theme, el) {
-  document.body.classList.remove("purple");
+  document.body.dataset.theme = theme;
 
   document.querySelectorAll('.theme-btn')
     .forEach(b => b.classList.remove('theme-active'));
@@ -199,6 +210,8 @@ function setTheme(theme, el) {
   if (theme === 'purple') {
     document.body.classList.add("purple");
   }
+
+  localStorage.setItem("theme", theme);
 }
 
 function renderResult(pane, content, isError = false) {

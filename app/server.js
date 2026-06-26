@@ -2,7 +2,7 @@ const http = require('http');
 const { existsSync, readFileSync } = require('fs');
 const { join } = require('path');
 
-const PORT = 8765;
+const PORT = Number(process.env.PORT) || 8765;
 const API_URL = 'https://apihub.agnes-ai.com/v1/images/generations';
 
 function loadLocalEnv() {
