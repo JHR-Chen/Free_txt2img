@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8" />
+<title>文生图工具</title>
+<script src="https://cdn.tailwindcss.com"></script>
+
+<style>
+:root {
+  --bg1: #0b0f17;
+  --bg2: #1a2333;
+  --accent: #84cc16;
+}
+
+body {
+  background: radial-gradient(circle at 20% 20%, var(--bg2), var(--bg1));
+  transition: all 0.5s;
+}
+
+body.purple {
+  --bg1: #140a1f;
+  --bg2: #2a0f45;
+  --accent: #a855f7;
+}
+
+.glass {
+  background: rgba(255,255,255,0.04);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+}
+
+.btn-main {
+  background: linear-gradient(135deg, var(--accent), #4d7c0f);
+}
+
+.tab {
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.tab-active {
+  background: rgba(59,130,246,0.25);
+  border: 1px solid rgba(59,130,246,0.6);
+}
+
+.add-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  font-size: 32px;
+  transition: 0.3s;
+}
+.add-btn:hover {
+  transform: scale(1.1);
+  background: rgba(168,85,247,0.2);
+  box-shadow: 0 0 25px rgba(168,85,247,0.6);
+}
+
+.theme-btn {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.2);
+  cursor: pointer;
+}
+.theme-active {
+  background: rgba(255,255,255,0.2);
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+
+<body class="text-white p-10">
+
+<!-- header -->
+<div class="flex justify-between items-center mb-10">
+
+  <div class="text-3xl font-bold flex items-center gap-2">
+    ✨ 文生图工具
+  </div>
+
+  <div class="flex gap-3">
+    <div class="theme-btn theme-active" onclick="setTheme('dark',this)">暗黑</div>
+    <div class="theme-btn" onclick="setTheme('purple',this)">紫色科技</div>
+  </div>
+
+</div>
+
+<!-- container -->
+<div id="container" class="flex flex-col gap-10"></div>
+
+<!-- add -->
+<div class="flex justify-center mt-16">
+  <button class="add-btn" onclick="addBlock()">+</button>
+</div>
+
+<script>
+/* ========== block template ========== */
+function createBlock() {
+  return `
+  <div class="grid grid-cols-2 gap-8 glass rounded-2xl p-6 fade-in" data-mode="1">
+
+    <div class="flex flex-col gap-6">
+
+      <div class="flex gap-4">
+        <button onclick="switchMode(this,1)"
+          class="flex-1 py-2 rounded-lg tab tab-active modeTab">
+          文生图
+        </button>
+        <button onclick="switchMode(this,2)"
+          class="flex-1 py-2 rounded-lg tab text-white/60 modeTab">
+          图生图
+        </button>
+      </div>
+
+      <div>
+        <label class="text-sm text-white/60 mb-2 block">Prompt</label>
+        <textarea
+          class="w-full h-40 p-4 rounded-xl bg-black/40 border border-white/10 focus:border-purple-500 outline-none promptInput"
+          placeholder="描述你想要的图片内容..."
+        ></textarea>
+      </div>
+
+      <div class="hidden urlBox">
+        <label class="text-sm text-white/60 mb-2 block">图片URL</label>
+        <input
+          type="text"
+          class="w-full p-3 rounded-xl bg-black/40 border border-white/10 urlInput"
+          placeholder="输入图片地址..."
+        />
+      </div>
+
+      <button onclick="generateImage(this)" class="btn-main py-4 rounded-xl text-lg font-semibold hover:scale-[1.02] transition generateBtn">
+        生成图片
+      </button>
+
+    </div>
+
+    <div class="glass rounded-2xl flex items-center justify-center min-h-[300px] resultPane">
+      <p class="text-white/40 resultPlaceholder">点击左侧按钮生成图片</p>
+    </div>
+
+  </div>
+  `;
+}
+
+window.onload = () => {
+  addBlock();
+};
+
+function addBlock() {
+  const div = document.createElement('div');
+  div.innerHTML = createBlock();
+  document.getElementById('container').appendChild(div);
+
+  window.scrollTo({
+    top: document.body.scrollHeight,
+    behavior: "smooth"
+  });
+}
+
+function switchMode(el, mode) {
+  const block = el.closest('.grid');
+  const tabs = block.querySelectorAll('.modeTab');
+  const box = block.querySelector('.urlBox');
+
+  tabs.forEach(t => {
+    t.classList.remove("tab-active");
+    t.classList.add("text-white/60");
+  });
+
+  el.classList.add("tab-active");
+  el.classList.remove("text-white/60");
+
+  if (mode === 2) {
+    box.classList.remove("hidden");
+  } else {
+    box.classList.add("hidden");
+  }
+
+  block.dataset.mode = String(mode);
+}
+
+function setTheme(theme, el) {
+  document.body.classList.remove("purple");
+
+  document.querySelectorAll('.theme-btn')
+    .forEach(b => b.classList.remove('theme-active'));
+
+  el.classList.add('theme-active');
+
+  if (theme === 'purple') {
+    document.body.classList.add("purple");
+  }
+}
+
+function renderResult(pane, content, isError = false) {
+  pane.innerHTML = `
+    <div class="w-full h-full min-h-[300px] flex items-center justify-center p-4">
+      <div class="w-full flex flex-col items-center gap-4 ${isError ? 'text-red-300' : ''}">
+        ${content}
+      </div>
+    </div>
+  `;
+}
+
+function getImageUrl(data) {
+  return data?.data?.[0]?.url
+    || data?.data?.[0]?.image_url
+    || data?.data?.[0]?.imageUrl
+    || data?.result?.[0]?.url
+    || data?.url
+    || data?.image_url
+    || '';
+}
+
+async function generateImage(btn) {
+  const block = btn.closest('.grid');
+  const promptInput = block.querySelector('.promptInput');
+  const urlInput = block.querySelector('.urlInput');
+  const resultPane = block.querySelector('.resultPane');
+  const mode = Number(block.dataset.mode || 1);
+  const prompt = promptInput.value.trim();
+  const imageUrl = urlInput.value.trim();
+  const originalText = btn.textContent;
+
+  if (!prompt) {
+    renderResult(resultPane, '<p>请先填写 Prompt。</p>', true);
+    return;
+  }
+
+  if (mode === 2 && !imageUrl) {
+    renderResult(resultPane, '<p>图生图模式下请先填写图片 URL。</p>', true);
+    return;
+  }
+
+  const payload = {
+    model: 'agnes-image-2.1-flash',
+    prompt,
+    size: '1024x768',
+    extra_body: {
+      response_format: 'url'
+    }
+  };
+
+  if (mode === 2) {
+    payload.extra_body.image = [imageUrl];
+  }
+
+  btn.disabled = true;
+  btn.textContent = '生成中...';
+  renderResult(resultPane, '<p class="text-white/40">正在请求生成图片，请稍候...</p>');
+
+  try {
+    const res = await fetch('/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    const text = await res.text();
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch {
+      data = { raw: text };
+    }
+
+    if (!res.ok) {
+      const message = data?.error?.message || data?.message || data?.raw || `请求失败，状态码 ${res.status}`;
+      renderResult(resultPane, `<p>${message}</p>`, true);
+      return;
+    }
+
+    const url = getImageUrl(data);
+    if (!url) {
+      renderResult(resultPane, `<pre class="text-left whitespace-pre-wrap text-sm bg-black/30 p-4 rounded-xl w-full overflow-auto">${JSON.stringify(data, null, 2)}</pre>`);
+      return;
+    }
+
+    resultPane.innerHTML = `
+      <div class="w-full flex flex-col items-center gap-4 p-4">
+        <img src="${url}" alt="generated image" class="max-w-full max-h-[520px] rounded-xl shadow-2xl object-contain" />
+        <a href="${url}" target="_blank" rel="noreferrer" class="text-sm text-white/60 hover:text-white break-all">${url}</a>
+      </div>
+    `;
+  } catch (err) {
+    renderResult(resultPane, `<p>${err?.message || '生成失败，请稍后重试。'}</p>`, true);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = originalText;
+  }
+}
+</script>
+
+</body>
+</html>

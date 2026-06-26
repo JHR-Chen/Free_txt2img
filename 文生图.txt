@@ -1,0 +1,31 @@
+1、文生图：URL 输出
+用于根据文本提示词生成图片，并以图片 URL 形式返回结果。
+curl https://apihub.agnes-ai.com/v1/images/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "agnes-image-2.1-flash",
+    "prompt": "A luminous floating city above a misty canyon at sunrise, cinematic realism",
+    "size": "1024x768",
+    "extra_body": {
+      "response_format": "url"
+    }
+  }'
+
+
+ 2、图生图：URL 输入，URL 输出
+用于基于已有图片进行转换，并尽量保持原图构图。
+curl https://apihub.agnes-ai.com/v1/images/generations \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "agnes-image-2.1-flash",
+    "prompt": "Transform the scene into a rain-soaked cyberpunk night with neon reflections while preserving the original composition",
+    "size": "1024x768",
+    "extra_body": {
+	     "image": [
+      "https://example.com/input-image.png"
+    ],
+      "response_format": "url"
+    }
+  }'
