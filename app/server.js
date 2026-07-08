@@ -84,6 +84,27 @@ const server = http.createServer(async (req, res) => {
     return;
   }
 
+  // 👉 处理静态资源（img/css/js等）
+  if (req.url.startsWith('/img/')) {
+    try {
+      const safePath = req.url.replace(/^\/+/, '');
+      const filePath = join(__dirname, safePath);
+
+      if (existsSync(filePath)) {
+        const file = readFileSync(filePath);
+
+        res.writeHead(200, {
+          'Content-Type': 'image/png'
+        });
+
+        res.end(file);
+        return;
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
   res.end('Not Found');
 });
